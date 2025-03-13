@@ -36,6 +36,7 @@ import { ReferenceModule } from '@module/reference.module';
         const logger = new Logger('DataSource');
         try {
           await dataSource.initialize();
+          console.log('Database initialized', configuration.envFilePath);
           logger.log('Data source has been initialized');
           return dataSource;
         } catch (e) {

@@ -11,6 +11,7 @@ dotenvConfig({ path: envFilePath });
 export const configuration = {
   isProd: process.env['APP_STATUS'] === 'prod',
   port: process.env['PORT'] || 4445,
+  envFilePath,
   getDataSourceConfig(): DataSourceOptions {
     return {
       type: 'postgres' as any,
