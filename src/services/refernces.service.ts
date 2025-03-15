@@ -35,11 +35,12 @@ export class ReferenceService {
     }, {});
   }
 
-  async getAllPermission(): Promise<{ name: Permissions; title: Permissions }[]> {
+  async getAllPermission(): Promise<{ name: Permissions; key: Permissions }[]> {
     const permissions = await this.rolePermissionRepository.find();
     return permissions.map(item => ({
       name: item.permission,
-      title: item.permission,
+      key: item.permission,
+      id: item.id,
     }));
   }
 }

@@ -11,6 +11,7 @@ import { PaginatedFilterDto } from '@dto/paginated-filter.dto';
 import { DbExceptions } from '@common/exceptions/db.exception';
 import { BaseResponse, BaseResponseGet } from '@common/base.response';
 import { GlobalFilterService } from '@services/global-filter.service';
+import { RolePermissionEntity } from '@entities/role-permissions.entity';
 
 @Injectable()
 export class RoleService {
@@ -18,11 +19,34 @@ export class RoleService {
     @InjectRepository(RolesEntity)
     private roleRepository: Repository<RolesEntity>,
     private globalFilterService: GlobalFilterService,
+    @InjectRepository(RolePermissionEntity)
+    private rolePermissionRepository: Repository<RolePermissionEntity>,
   ) {}
 
   async createRole(createRoleDto: CreateRoleDto): Promise<RolesEntity> {
-    const role = this.roleRepository.create(createRoleDto);
-    return this.roleRepository.save(role);
+    const { permissions, description, status, name } = createRoleDto;
+
+    const newPermission = Object.values(permissions);
+
+    const role = this.roleRepository.create({
+      name,
+      description,
+      status,
+      permissions: newPermission,
+    });
+
+    const savedRole = await this.roleRepository.save(role);
+
+    const rolePermissions = newPermission.map(perm =>
+      this.rolePermissionRepository.create({
+        role: savedRole,
+        permission: perm,
+      }),
+    );
+
+    await this.rolePermissionRepository.save(rolePermissions);
+
+    return this.roleRepository.save(savedRole);
   }
 
   async getPaginatedWithFilter(
@@ -37,6 +61,7 @@ export class RoleService {
 
   async getRoleById(id: number): Promise<RolesEntity> {
     const role = await this.roleRepository.findOne({ where: { id } });
+    console.log('role', role);
     if (!role) throw new NotFoundException('Role not found');
     return role;
   }
@@ -45,17 +70,21 @@ export class RoleService {
     try {
       const { name, permissions, description } = dto;
       const { id } = params;
-      const role = await this.roleRepository.findOneBy({ id });
+
+      const role = await this.roleRepository.findOne({
+        where: { id },
+        relations: ['permissions'], // Agar many-to-many relation bo‘lsa
+      });
       if (!role) {
         return {
           status: HttpStatus.NOT_FOUND,
           data: null,
-          message: 'Admin not found!',
+          message: 'Role not found!',
         };
       }
 
-      const { raw } = await this.roleRepository
-        .createQueryBuilder('admins')
+      const updatedRole = await this.roleRepository
+        .createQueryBuilder()
         .update(RolesEntity)
         .set({
           name: name ?? role.name,
@@ -65,10 +94,30 @@ export class RoleService {
         .where({ id })
         .returning('*')
         .execute();
+
+      if (permissions) {
+        const newPermissions = Object.values(permissions);
+
+        await this.rolePermissionRepository
+          .createQueryBuilder()
+          .delete()
+          .from(RolePermissionEntity)
+          .where('roleId = :id', { id })
+          .execute();
+
+        const rolePermissions = newPermissions.map((perm: any) =>
+          this.rolePermissionRepository.create({
+            role,
+            permission: perm,
+          }),
+        );
+        await this.rolePermissionRepository.save(rolePermissions);
+      }
+
       return {
-        status: HttpStatus.CREATED,
-        data: raw,
-        message: 'Admin updated successfully!',
+        status: HttpStatus.OK,
+        data: updatedRole.raw[0],
+        message: 'Role updated successfully!',
       };
     } catch (error) {
       return DbExceptions.handle(error);

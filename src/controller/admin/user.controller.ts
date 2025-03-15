@@ -42,7 +42,23 @@ export class UserController {
 
   @Post()
   @UseGuards(JwtGuard)
-  async addOne(@Body() dto: UserCreateDto, @Res() res: Response) {
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './uploads/avatars',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
+  async createUser(
+    @Body() dto: UserCreateDto,
+    @UploadedFile() file?: Express.Multer.File,
+    @Res() res: Response,
+  ) {
     const response = await this.userService.create(dto);
     res.status(response.status).send(response);
   }

@@ -43,7 +43,7 @@ export class UserService {
         return {
           status: HttpStatus.OK,
           data: [],
-          message: 'No admin found!',
+          message: 'No user found!',
         };
       }
       return {
@@ -62,16 +62,16 @@ export class UserService {
 
       const hashedPassword = await bcryptHelper.hash(password);
 
-      const admin = await this.userRepository.findOneBy({ username });
-      if (admin) {
+      const user = await this.userRepository.findOneBy({ username });
+      if (user) {
         return {
           status: HttpStatus.BAD_REQUEST,
           data: null,
           message: 'User already exists!',
         };
       }
-      const newAdmin = await this.userRepository
-        .createQueryBuilder('admins')
+      const newUser = await this.userRepository
+        .createQueryBuilder('users')
         .insert()
         .into(UsersEntity)
         .values({
@@ -86,8 +86,8 @@ export class UserService {
         .execute();
       return {
         status: HttpStatus.CREATED,
-        data: newAdmin.raw,
-        message: 'Admin created successfully!',
+        data: newUser.raw,
+        message: 'user created successfully!',
       };
     } catch (err) {
       return DbExceptions.handle(err);

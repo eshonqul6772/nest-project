@@ -15,7 +15,7 @@ export class ReferenceController {
 
   @Get('permissions')
   @UseGuards(JwtGuard)
-  async getAllPermission(): Promise<{ name: Permissions; title: Permissions }[]> {
+  async getAllPermission(): Promise<{ name: Permissions; key: Permissions }[]> {
     return this.referenceService.getAllPermission();
   }
 
