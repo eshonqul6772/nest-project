@@ -1,10 +1,11 @@
 import { join } from 'path';
 import { DataSource } from 'typeorm';
-import { configuration } from '@common/config';
 import { ConfigModule } from '@nestjs/config';
 import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiBearerAuth } from '@nestjs/swagger';
+
+import { configuration } from '@common/config';
 
 import { dataSource } from '@utils/dataSource';
 
@@ -13,6 +14,7 @@ import { AuthModule } from '@module/auth.module';
 import { RoleModule } from '@module/role.module';
 import { TranslateModule } from '@module/translation.module';
 import { ReferenceModule } from '@module/reference.module';
+import { FileModule } from '@module/file.module';
 
 @ApiBearerAuth()
 @Module({
@@ -27,6 +29,7 @@ import { ReferenceModule } from '@module/reference.module';
     RoleModule,
     AuthModule,
     ReferenceModule,
+    FileModule,
   ],
   controllers: [],
   providers: [
@@ -36,7 +39,6 @@ import { ReferenceModule } from '@module/reference.module';
         const logger = new Logger('DataSource');
         try {
           await dataSource.initialize();
-          console.log('Database initialized', configuration.envFilePath);
           logger.log('Data source has been initialized');
           return dataSource;
         } catch (e) {

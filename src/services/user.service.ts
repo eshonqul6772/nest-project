@@ -14,6 +14,7 @@ import { DbExceptions } from '@common/exceptions/db.exception';
 import { BaseResponse, BaseResponseGet } from '@common/base.response';
 
 import { GlobalFilterService } from '@services/global-filter.service';
+import { FileService } from '@services/file.service';
 
 @Injectable()
 export class UserService {
@@ -21,6 +22,7 @@ export class UserService {
     @InjectRepository(UsersEntity)
     private readonly userRepository: Repository<UsersEntity>,
     private globalFilterService: GlobalFilterService,
+    private fileService: FileService,
   ) {}
 
   async getPaginatedWithFilter(
@@ -58,7 +60,7 @@ export class UserService {
 
   async create(dto: any): Promise<BaseResponse<UsersEntity>> {
     try {
-      const { username, password, firstName, lastName, status, roleId } = dto;
+      const { username, password, firstName, lastName, status, photoId, roleId } = dto;
 
       const hashedPassword = await bcryptHelper.hash(password);
 
@@ -70,6 +72,9 @@ export class UserService {
           message: 'User already exists!',
         };
       }
+
+      console.log('User already exists!', photoId);
+
       const newUser = await this.userRepository
         .createQueryBuilder('users')
         .insert()
@@ -79,6 +84,7 @@ export class UserService {
           password: hashedPassword,
           firstName,
           lastName,
+          photoId,
           status,
           role: roleId,
         })
@@ -118,7 +124,7 @@ export class UserService {
           password: hashedPassword ?? user.password,
           username: username ?? user.username,
           role: roleId ?? (user.role as any),
-          image: image ?? user.image,
+          photoId: image ?? user.photoId,
           status: status ?? (user.status as any),
         })
         .where({ id })

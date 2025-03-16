@@ -18,6 +18,10 @@ export class UserCreateDto {
   roleId: number;
 
   @IsNotEmpty()
+  @IsNumber()
+  photoId: number;
+
+  @IsNotEmpty()
   @IsString()
   password: string;
 }

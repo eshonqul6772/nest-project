@@ -7,7 +7,17 @@ import { STATUS } from '@utils/enum';
 import { PublicFields } from '@utils/public-fields.decorator';
 
 @Entity('users')
-@PublicFields('id', 'firstName', 'lastName', 'username', 'status', 'createdAt', 'updatedAt', 'role')
+@PublicFields(
+  'id',
+  'firstName',
+  'lastName',
+  'username',
+  'status',
+  'createdAt',
+  'updatedAt',
+  'role',
+  'photoId',
+)
 export class UsersEntity extends GeneralEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -24,8 +34,8 @@ export class UsersEntity extends GeneralEntity {
   @Column({ type: 'varchar', name: 'password', nullable: false })
   password: string;
 
-  @Column({ type: 'varchar', name: 'image', nullable: true })
-  image: string;
+  @Column({ type: 'bigint', name: 'photoId', nullable: true })
+  photoId: number;
 
   @Column({ type: 'enum', enum: STATUS, default: STATUS.ACTIVE })
   status: STATUS;
