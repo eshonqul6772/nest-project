@@ -57,7 +57,7 @@ export class UserController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './uploads/avatar',
+        destination: './upload/files',
         filename: (_req, file, cb) => {
           const randomName = Array(32)
             .fill(null)

@@ -30,7 +30,7 @@ export const multerOptions = {
     destination: (req: any, file: any, cb: any) => {
       // console.log(file);
 
-      const uploadPath = resolve('uploads');
+      const uploadPath = resolve('upload');
       // Create folder if doesn't exist
       if (!existsSync(uploadPath)) {
         mkdirSync(uploadPath);

@@ -85,4 +85,32 @@ export class FileService {
       throw DbExceptions.handle(error);
     }
   }
+
+  async getFileByUuid(uuid: string): Promise<FileEntity> {
+    try {
+      const file = await this.fileRepository.findOne({ where: { uuid } });
+      if (!file) {
+        throw new Error('File does not exist on server');
+      }
+
+      // Fayl yo‘li bo‘sh yoki undefined bo‘lsa
+      if (!file.uploadPath) {
+        throw new Error('File does not exist on server');
+      }
+
+      // Yo‘lni standartlashtirish (Windows/Linux moslashuvi uchun)
+      const normalizedPath = file.uploadPath.replace(/\\/g, '/');
+      const filePath = join(process.cwd(), normalizedPath);
+
+      console.log('Attempting to access file at:', filePath); // Debug qilish uchun
+
+      if (!existsSync(filePath)) {
+        throw new Error('File does not exist on server');
+      }
+
+      return file;
+    } catch (error) {
+      throw DbExceptions.handle(error);
+    }
+  }
 }

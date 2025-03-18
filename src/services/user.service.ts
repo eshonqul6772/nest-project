@@ -4,6 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { HttpStatus, Injectable } from '@nestjs/common';
 
 import { UsersEntity } from '@entities/users.entity';
+import { RolesEntity } from '@entities/role.entity';
+import { FileEntity } from '@entities/file.entity';
 
 import { PaginatedFilterDto } from '@dto/paginated-filter.dto';
 import { UserUpdateDto } from '@dto/users/user.update.dto';
@@ -14,22 +16,50 @@ import { DbExceptions } from '@common/exceptions/db.exception';
 import { BaseResponse, BaseResponseGet } from '@common/base.response';
 
 import { GlobalFilterService } from '@services/global-filter.service';
-import { FileService } from '@services/file.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UsersEntity)
     private readonly userRepository: Repository<UsersEntity>,
+    @InjectRepository(RolesEntity)
+    private readonly roleRepository: Repository<RolesEntity>,
+    @InjectRepository(FileEntity)
+    private readonly fileRepository: Repository<FileEntity>,
     private globalFilterService: GlobalFilterService,
-    private fileService: FileService,
   ) {}
 
   async getPaginatedWithFilter(
     paginatedFilterDto: PaginatedFilterDto,
   ): Promise<BaseResponseGet<UsersEntity[]>> {
     try {
-      return await this.globalFilterService.applyFilter(this.userRepository, paginatedFilterDto);
+      const result = await this.globalFilterService.applyFilter(
+        this.userRepository,
+        paginatedFilterDto,
+      );
+
+      result.data = await Promise.all(
+        result.data.map(async (user: any) => {
+          const role = await this.roleRepository.findOne({ where: { id: user.roleId } });
+          const photo = await this.fileRepository.findOne({ where: { id: user.photoId } });
+          console.log('photoId', user.photoId);
+          return {
+            ...user,
+            photo: photo ? { id: photo.id, name: photo.name, uuid: photo.uuid } : user.photoId,
+            role: role ? { id: role.id, name: role.name } : null,
+          };
+        }),
+      );
+
+      return {
+        status: HttpStatus.OK,
+        data: result.data,
+        message: 'Data fetched successfully',
+        page: result.page,
+        size: result.size,
+        totalCount: result.totalCount,
+        totalPages: result.totalPages,
+      };
     } catch (error) {
       return DbExceptions.handleget(error);
     }
@@ -72,8 +102,6 @@ export class UserService {
           message: 'User already exists!',
         };
       }
-
-      console.log('User already exists!', photoId);
 
       const newUser = await this.userRepository
         .createQueryBuilder('users')

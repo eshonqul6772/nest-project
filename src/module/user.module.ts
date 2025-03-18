@@ -3,7 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MulterModule } from '@nestjs/platform-express';
 
 import { UsersEntity } from '@entities/users.entity';
-import { FileEntity } from '@entities/file.entity'
+import { FileEntity } from '@entities/file.entity';
+import { RolesEntity } from '@entities/role.entity';
 
 import { UserController } from '@controller/admin/user.controller';
 
@@ -13,7 +14,7 @@ import { FileService } from '@services/file.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UsersEntity, FileEntity]),
+    TypeOrmModule.forFeature([UsersEntity, FileEntity, RolesEntity]),
     MulterModule.register({
       dest: './upload',
     }),
