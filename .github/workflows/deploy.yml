@@ -1,0 +1,46 @@
+name: Deploy to Ubuntu Server (No Docker)
+
+on:
+  push:
+    branches:
+      - main  # Faqat `main` branchga push bo‘lsa deploy bo‘ladi
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository’ni klonlash
+        uses: actions/checkout@v4
+
+      - name: SSH orqali serverga ulanish va deploy qilish
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # 1. Loyihaning joylashgan papkasiga o‘tish
+            cd /home/${{ secrets.SERVER_USER }}/myapp || exit 1
+
+            # 2. Eng so‘nggi kodni olish
+            git pull origin main
+
+            # 3. Node.js versiyasini tekshirish
+            nvm use 18 || source ~/.nvm/nvm.sh && nvm use 18
+
+            # 4. Ishga tushirish uchun kerakli package'larni o‘rnatish
+            npm install --frozen-lockfile
+
+            # 5. Yangi build yaratish
+            npm run build
+
+            # 6. Oldi serverni o‘ldirish
+            pm2 stop myapp || true
+            pm2 delete myapp || true
+
+            # 7. Yangi versiyani ishga tushirish
+            pm2 start dist/main.js --name "myapp"
+
+            # 8. Ishlayotgan jarayonlarni tekshirish
+            pm2 list
