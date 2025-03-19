@@ -27,7 +27,7 @@ jobs:
             git pull origin main
 
             # 3. Node.js versiyasini tekshirish
-            nvm use 18 || source ~/.nvm/nvm.sh && nvm use 18
+            nvm use 22 || source ~/.nvm/nvm.sh && nvm use 22
 
             # 4. Ishga tushirish uchun kerakli package'larni o‘rnatish
             npm install --frozen-lockfile
