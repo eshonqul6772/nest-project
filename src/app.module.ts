@@ -40,7 +40,6 @@ import { FileModule } from '@module/file.module';
         try {
           await dataSource.initialize();
           logger.log('Data source has been initialized');
-          logger.log('test uchun edi bu');
           return dataSource;
         } catch (e) {
           logger.error('Error during Data Source initialization', e);
