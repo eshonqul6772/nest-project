@@ -3,45 +3,37 @@ import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname, resolve } from 'path';
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+
+const generateFilename = (file: Express.Multer.File): string =>
+  `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${extname(file.originalname)}`;
+
 export const multerOptions = {
-  // Enable file size limits
-  limits: {
-    fileSize: 1024 * 1024 * 5,
-  },
-  // Check the mimetypes to allow for upload
-  fileFilter: (req: any, file: any, cb: any) => {
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-      // Allow storage of file
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter: (_req: any, file: Express.Multer.File, cb: any) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      // Reject file
       cb(
         new HttpException(
-          `Unsupported file type ${extname(file.originalname)}`,
+          `Faqat JPG, PNG yoki GIF fayllar qo'llab-quvvatlanadi`,
           HttpStatus.BAD_REQUEST,
         ),
         false,
       );
     }
   },
-  // Storage properties
   storage: diskStorage({
-    // Destination storage path details
-    destination: (req: any, file: any, cb: any) => {
-      // console.log(file);
-
-      const uploadPath = resolve('upload');
-      // Create folder if doesn't exist
+    destination: (_req: any, _file: any, cb: any) => {
+      const uploadPath = resolve('upload/avatars');
       if (!existsSync(uploadPath)) {
-        mkdirSync(uploadPath);
+        mkdirSync(uploadPath, { recursive: true });
       }
       cb(null, uploadPath);
     },
-    // File modification details
-    filename: (req: any, file: any, cb: any) => {
-      // console.log(file);
-      // Calling the callback passing the random name generated with the original extension name
-      cb(null, Date.now() + file.originalname);
+    filename: (_req: any, file: Express.Multer.File, cb: any) => {
+      cb(null, generateFilename(file));
     },
   }),
 };

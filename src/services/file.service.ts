@@ -1,10 +1,9 @@
-// file.service.ts
-import { Injectable, HttpStatus } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid'; // UUID generatsiyasi uchun
-import { extname, join } from 'path';
 import { existsSync } from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import { extname, join } from 'path';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, HttpStatus } from '@nestjs/common';
 
 import { STATUS } from '@utils/enum';
 
@@ -101,8 +100,6 @@ export class FileService {
       // Yo‘lni standartlashtirish (Windows/Linux moslashuvi uchun)
       const normalizedPath = file.uploadPath.replace(/\\/g, '/');
       const filePath = join(process.cwd(), normalizedPath);
-
-      console.log('Attempting to access file at:', filePath); // Debug qilish uchun
 
       if (!existsSync(filePath)) {
         throw new Error('File does not exist on server');
