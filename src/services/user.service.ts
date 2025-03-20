@@ -42,7 +42,6 @@ export class UserService {
         result.data.map(async (user: any) => {
           const role = await this.roleRepository.findOne({ where: { id: user.roleId } });
           const photo = await this.fileRepository.findOne({ where: { id: user.photoId } });
-          console.log('photoId', user.photoId);
           return {
             ...user,
             photo: photo ? { id: photo.id, name: photo.name, uuid: photo.uuid } : user.photoId,
