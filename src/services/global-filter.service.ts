@@ -21,6 +21,8 @@ export class GlobalFilterService {
 
     const { page, perPage, sort, search } = paginatedFilter;
 
+    console.log('paginatedFilter', paginatedFilter);
+
     const publicFields =
       this.reflector.get<string[]>(PUBLIC_FIELDS, repository.target as any) || [];
 

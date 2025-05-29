@@ -1,8 +1,7 @@
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 
-import { UsersEntity } from '@entities/users.entity';
 import { TranslationsEntity } from '@entities/translations.entity';
 
 import { PaginatedFilterDto } from '@dto/paginated-filter.dto';
@@ -25,10 +24,22 @@ export class TranslationService {
     paginatedFilterDto: PaginatedFilterDto,
   ): Promise<BaseResponseGet<TranslationsEntity[]>> {
     try {
-      return await this.globalFilterService.applyFilter(
+      const result = await this.globalFilterService.applyFilter(
         this.translationRepository,
         paginatedFilterDto,
       );
+
+      console.log('data', result.data.length);
+
+      return {
+        status: HttpStatus.OK,
+        data: result.data,
+        message: 'Data fetched successfully',
+        page: result.page,
+        size: result.size,
+        totalCount: result.totalCount,
+        totalPages: result.totalPages,
+      };
     } catch (error) {
       return DbExceptions.handleget(error);
     }
@@ -58,7 +69,7 @@ export class TranslationService {
     }
   }
 
-  async createTranslation(dto: any): Promise<BaseResponse<UsersEntity>> {
+  async createTranslation(dto: any): Promise<BaseResponse<TranslationsEntity>> {
     try {
       const { name, types, status, tag } = dto;
 
@@ -67,7 +78,7 @@ export class TranslationService {
         return {
           status: HttpStatus.BAD_REQUEST,
           data: null,
-          message: 'Admin already exists!',
+          message: 'this key already exists!',
         };
       }
       const newTranslation = await this.translationRepository
@@ -120,31 +131,15 @@ export class TranslationService {
       return {
         status: HttpStatus.CREATED,
         data: raw,
-        message: 'Tage topilmadi',
+        message: 'Tag not found',
       };
     } catch (error) {
       return DbExceptions.handle(error);
     }
   }
 
-  async deleteTranslation(param: any): Promise<BaseResponse<UsersEntity>> {
-    try {
-      const { id } = param;
-
-      const { raw } = await this.translationRepository
-        .createQueryBuilder()
-        .softDelete()
-        .from(TranslationsEntity)
-        .where({ id })
-        .returning('*')
-        .execute();
-      return {
-        status: 200,
-        data: raw,
-        message: 'Admin deleted successfully',
-      };
-    } catch (error) {
-      return DbExceptions.handle(error);
-    }
+  async deleteTranslation(id: number | string): Promise<void> {
+    const result = await this.translationRepository.delete(id);
+    if (result.affected === 0) throw new NotFoundException('tag not found');
   }
 }

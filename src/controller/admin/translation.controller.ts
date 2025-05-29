@@ -11,9 +11,7 @@ import { PaginatedFilterDto } from '@dto/paginated-filter.dto';
 import { CreateTranslationDto } from '@dto/translations/create.translation.dto';
 
 import { TranslationService } from '@services/translation.service';
-import { PermissionGuard } from '@common/auth/permission.guard';
-import { Permission } from '@dec/permission.decorator';
-import { Permissions } from '@utils/enum';
+import { DeleteTranslationDto } from "@dto/translations/delete.translation.dto";
 
 @ApiTags('translations')
 @Controller('/admin/translations')
@@ -38,8 +36,6 @@ export class TranslationController {
   }
 
   @Post('pageable')
-  @UseGuards(JwtGuard, PermissionGuard)
-  @Permission(Permissions.VIEW_USERS)
   async findAll(@Body() paginatedFilterDto: PaginatedFilterDto) {
     return await this.translationService.getPaginatedWithFilter(paginatedFilterDto);
   }

@@ -61,7 +61,6 @@ export class RoleService {
 
   async getRoleById(id: number): Promise<RolesEntity> {
     const role = await this.roleRepository.findOne({ where: { id } });
-    console.log('role', role);
     if (!role) throw new NotFoundException('Role not found');
     return role;
   }
@@ -73,7 +72,7 @@ export class RoleService {
 
       const role = await this.roleRepository.findOne({
         where: { id },
-        relations: ['permissions'], // Agar many-to-many relation bo‘lsa
+        relations: ['permissions'],
       });
       if (!role) {
         return {

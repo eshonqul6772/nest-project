@@ -3,8 +3,10 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { GeneralEntity } from '@common/base.entity';
 
 import { LANG, LANG_TYPE, STATUS } from '@utils/enum';
+import { PublicFields } from '@utils/public-fields.decorator';
 
 @Entity('translation')
+@PublicFields('id', 'tag', 'types', 'name', 'status', 'createdAt', 'updatedAt')
 export class TranslationsEntity extends GeneralEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
