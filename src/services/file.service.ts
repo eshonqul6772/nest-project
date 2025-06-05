@@ -18,6 +18,7 @@ export class FileService {
     private readonly fileRepository: Repository<FileEntity>,
   ) {}
 
+
   async uploadFile(file: Express.Multer.File): Promise<BaseResponse<any>> {
     try {
       // Fayl ma'lumotlarini FileEntity ga saqlash
